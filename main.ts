@@ -9,7 +9,7 @@ type Lesson = {
 type Block =
   | {
       title: string;
-      item: Block[];
+      item: Block[] | Block;
     }
   | Lesson;
 
@@ -26,7 +26,11 @@ function processBlocks(blocks: Block[]) {
   for (const block of blocks) {
     if ("item" in block) {
       printer.write(`Block: ${block.title}\n`);
-      processBlocks(block.item);
+      if (Array.isArray(block.item)) {
+        processBlocks(block.item);
+      } else {
+        processBlocks([block.item]);
+      }
     } else {
       processLesson(block);
     }
