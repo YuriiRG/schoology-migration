@@ -1,0 +1,18 @@
+{
+  "name": "schoology-migration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.ts",
+  "scripts": {
+    "run": "jiti main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.10.5",
+    "fast-xml-parser": "^4.3.2",
+    "jiti": "^1.21.0",
+    "node-html-parser": "^6.1.11"
+  }
+}
