@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { createWriteStream, existsSync, readFileSync, readdirSync } from "fs";
-import { parse as parseHtml } from "node-html-parser";
+import { HTMLElement, parse as parseHtml } from "node-html-parser";
 type Lesson = {
   title: string | number;
   "@_identifierref"?: string;
@@ -42,30 +42,43 @@ function processLesson(lesson: Lesson) {
     lesson.title = lesson.title.toFixed(2).padStart(5, "0");
   }
   //printer.write(`${lesson.title}: ${lesson["@_identifierref"]}`);
-  if (
-    lesson["@_identifierref"] !== undefined &&
-    readdirSync(`./data/${lesson["@_identifierref"]}`).length > 0
-  ) {
+  if (lesson["@_identifierref"] !== undefined) {
+    let html: HTMLElement;
+
     if (
-      !existsSync(
+      existsSync(
         `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`
       )
     ) {
+      html = parseHtml(
+        readFileSync(
+          `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`,
+          { encoding: "utf-8" }
+        )
+      );
+    } else if (
+      existsSync(
+        `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`
+      )
+    ) {
+      html = parseHtml(
+        readFileSync(
+          `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`,
+          { encoding: "utf-8" }
+        )
+      );
+    } else {
       console.log(
-        `No html in "${lesson["title"]}" ${lesson["@_identifierref"]}`
+        `No html or xml found in "${lesson["title"]}" ${lesson["@_identifierref"]}`
       );
       return;
     }
-    const html = parseHtml(
-      readFileSync(
-        `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`,
-        { encoding: "utf-8" }
-      )
-    );
+
     let links = html
       .querySelectorAll("iframe")
       .map((elem) => elem.attributes.src)
       .concat(html.querySelectorAll("a").map((elem) => elem.attributes.href))
+      .concat(html.querySelectorAll("url").map((elem) => elem.attributes.href))
       .filter((url) => !url.startsWith("/"))
       .map((url) =>
         url.includes("youtube.com/embed/")
@@ -75,6 +88,6 @@ function processLesson(lesson: Lesson) {
     links = links.filter((item, pos) => links.indexOf(item) == pos);
     printer.write(`${lesson.title}\t${links.join(" ")}\n`);
   } else {
-    printer.write(`${lesson.title}\n`);
+    console.log(`No identifier ref found for "${lesson["title"]}"`);
   }
 }
