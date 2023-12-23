@@ -6,7 +6,7 @@ It is not perfect, and I claim no responsibility for any incorrect data produced
 
 ## Usage
 
-**Step 0. Prerequisites.** Node.js and npm or pnpm are required to execute the script.
+**Step 0. Prerequisites.** [Node.js](https://nodejs.org) and npm (installed with Node.js) or pnpm are required to execute the script.
 
 **Step 1. Install the script.** Download the files from the repository and run `pnpm install`. `npm install` should work too.
 
