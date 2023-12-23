@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.ts",
   "scripts": {
-    "execute": "jiti main.ts"
+    "execute": "tsc && node dist/main.js",
+    "build": "tsc && pkg -t node18-win -o script.exe dist/main.js"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +13,8 @@
   "dependencies": {
     "@types/node": "^20.10.5",
     "fast-xml-parser": "^4.3.2",
-    "jiti": "^1.21.0",
-    "node-html-parser": "^6.1.11"
+    "node-html-parser": "^6.1.11",
+    "pkg": "^5.8.1",
+    "typescript": "^5.3.3"
   }
 }

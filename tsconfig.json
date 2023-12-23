@@ -2,21 +2,20 @@
   "compilerOptions": {
     // enable latest features
     "lib": ["ESNext"],
-    "module": "esnext",
-    "target": "esnext",
+    "target": "ESNext",
 
-    // if TS 5.x+
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "moduleDetection": "force",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
 
     // best practices
     "strict": true,
+    "moduleDetection": "force",
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "composite": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
+  "include": ["./*.ts"]
 }
