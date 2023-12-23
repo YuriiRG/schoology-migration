@@ -80,6 +80,7 @@ function processLesson(lesson: Lesson) {
       .concat(html.querySelectorAll("a").map((elem) => elem.attributes.href))
       .concat(html.querySelectorAll("url").map((elem) => elem.attributes.href))
       .filter((url) => !url.startsWith("/"))
+      .concat(html.textContent.match(/https:\/\/[a-zA-Z.\/\-_?=0-9]+/g) ?? [])
       .filter((url) => !url.includes(".pptx"))
       .map((url) =>
         url.includes("youtube.com/embed/")
