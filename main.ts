@@ -1,10 +1,22 @@
+import AdmZip from "adm-zip";
 import { XMLParser } from "fast-xml-parser";
-import { createWriteStream, existsSync, readFileSync, readdirSync } from "fs";
+import { createWriteStream, existsSync, readFileSync, rmSync } from "fs";
 import { HTMLElement, parse as parseHtml } from "node-html-parser";
 type Lesson = {
   title: string | number;
   "@_identifierref"?: string;
 };
+
+const file = process.argv.findLast((arg) => arg.endsWith(".imscc"));
+
+if (file === undefined) {
+  console.log("No input file specified");
+  process.exit(1);
+}
+
+const zip = new AdmZip(file);
+
+zip.extractAllTo("./temp");
 
 type Block =
   | {
@@ -15,12 +27,14 @@ type Block =
 
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 const manifest: Block[] = xmlParser.parse(
-  readFileSync("./data/imsmanifest.xml", { encoding: "utf-8" })
+  readFileSync("./temp/imsmanifest.xml", { encoding: "utf-8" })
 ).manifest.organizations.organization.item.item;
 
 const printer = createWriteStream("results.txt");
 
 processBlocks(manifest);
+
+rmSync("./temp", { recursive: true, force: true });
 
 function processBlocks(blocks: Block[]) {
   for (const block of blocks) {
@@ -47,23 +61,23 @@ function processLesson(lesson: Lesson) {
 
     if (
       existsSync(
-        `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`
+        `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`
       )
     ) {
       html = parseHtml(
         readFileSync(
-          `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`,
+          `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`,
           { encoding: "utf-8" }
         )
       );
     } else if (
       existsSync(
-        `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`
+        `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`
       )
     ) {
       html = parseHtml(
         readFileSync(
-          `./data/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`,
+          `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`,
           { encoding: "utf-8" }
         )
       );
