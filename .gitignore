@@ -1,5 +1,6 @@
 node_modules
 data
+temp
 results.txt
 dist
 script.exe
