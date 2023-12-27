@@ -2,10 +2,22 @@ import AdmZip from "adm-zip";
 import { XMLParser } from "fast-xml-parser";
 import { createWriteStream, existsSync, readFileSync, rmSync } from "fs";
 import { HTMLElement, parse as parseHtml } from "node-html-parser";
-type Lesson = {
-  title: string | number;
-  "@_identifierref"?: string;
+import { z } from "zod";
+
+const lessonSchema = z.object({
+  title: z.string().optional(),
+  "@_identifierref": z.string().optional(),
+});
+
+type Lesson = z.infer<typeof lessonSchema>;
+
+type Block = Lesson & {
+  item?: Block | Block[];
 };
+
+const blockSchema: z.ZodType<Block> = lessonSchema.extend({
+  item: z.lazy(() => z.union([blockSchema, z.array(blockSchema)]).optional()),
+});
 
 const file = process.argv.findLast((arg) => arg.endsWith(".imscc"));
 
@@ -18,17 +30,31 @@ const zip = new AdmZip(file);
 
 zip.extractAllTo("./temp");
 
-type Block =
-  | {
-      title: string;
-      item: Block[] | Block;
-    }
-  | Lesson;
-
-const xmlParser = new XMLParser({ ignoreAttributes: false });
-const manifest: Block[] = xmlParser.parse(
-  readFileSync("./temp/imsmanifest.xml", { encoding: "utf-8" })
-).manifest.organizations.organization.item.item;
+const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  numberParseOptions: {
+    hex: false,
+    leadingZeros: false,
+    eNotation: false,
+    skipLike: /.*/,
+  },
+});
+let manifest: Block[];
+try {
+  manifest = z
+    .array(blockSchema)
+    .parse(
+      xmlParser.parse(
+        readFileSync("./temp/imsmanifest.xml", { encoding: "utf-8" })
+      ).manifest.organizations.organization.item.item
+    );
+} catch (e) {
+  console.log("File manifest is not in a format that the program understands");
+  console.log(
+    "It likely would have caused some issues. Report the issue to the program author"
+  );
+  process.exit(1);
+}
 
 const printer = createWriteStream("results.txt");
 
@@ -38,8 +64,8 @@ rmSync("./temp", { recursive: true, force: true });
 
 function processBlocks(blocks: Block[]) {
   for (const block of blocks) {
-    if ("item" in block) {
-      printer.write(`Block: ${block.title}\n`);
+    if (block.item !== undefined) {
+      printer.write(`Block: "${block.title}"\n`);
       if (Array.isArray(block.item)) {
         processBlocks(block.item);
       } else {
@@ -52,34 +78,17 @@ function processBlocks(blocks: Block[]) {
 }
 
 function processLesson(lesson: Lesson) {
-  if (typeof lesson.title === "number") {
-    lesson.title = lesson.title.toFixed(2).padStart(5, "0");
-  }
   //printer.write(`${lesson.title}: ${lesson["@_identifierref"]}`);
   if (lesson["@_identifierref"] !== undefined) {
+    const markupFilePathStart = `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}`;
     let html: HTMLElement;
-
-    if (
-      existsSync(
-        `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`
-      )
-    ) {
+    if (existsSync(`${markupFilePathStart}.html`)) {
       html = parseHtml(
-        readFileSync(
-          `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.html`,
-          { encoding: "utf-8" }
-        )
+        readFileSync(`${markupFilePathStart}.html`, { encoding: "utf-8" })
       );
-    } else if (
-      existsSync(
-        `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`
-      )
-    ) {
+    } else if (existsSync(`${markupFilePathStart}.xml`)) {
       html = parseHtml(
-        readFileSync(
-          `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}.xml`,
-          { encoding: "utf-8" }
-        )
+        readFileSync(`${markupFilePathStart}.xml`, { encoding: "utf-8" })
       );
     } else {
       console.log(
