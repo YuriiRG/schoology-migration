@@ -78,7 +78,6 @@ function processBlocks(blocks: Block[]) {
 }
 
 function processLesson(lesson: Lesson) {
-  //printer.write(`${lesson.title}: ${lesson["@_identifierref"]}`);
   if (lesson["@_identifierref"] !== undefined) {
     const markupFilePathStart = `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}`;
     let html: HTMLElement;
@@ -102,7 +101,7 @@ function processLesson(lesson: Lesson) {
       .map((elem) => elem.attributes.src)
       .concat(html.querySelectorAll("a").map((elem) => elem.attributes.href))
       .concat(html.querySelectorAll("url").map((elem) => elem.attributes.href))
-      .filter((url) => !url.startsWith("/"))
+      .filter((url) => url && !url.startsWith("/"))
       .concat(html.textContent.match(/https:\/\/[a-zA-Z.\/\-_?=0-9]+/g) ?? [])
       .filter((url) => !url.includes(".pptx"))
       .map((url) =>
