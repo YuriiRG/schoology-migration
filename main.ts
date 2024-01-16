@@ -58,7 +58,7 @@ try {
 
 const printer = createWriteStream("results.txt");
 
-printer.write(`File name: ${file}`);
+printer.write(`File name: ${file}\n`);
 
 processBlocks(manifest);
 
