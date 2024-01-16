@@ -58,6 +58,8 @@ try {
 
 const printer = createWriteStream("results.txt");
 
+printer.write(`File name: ${file}`);
+
 processBlocks(manifest);
 
 rmSync("./temp", { recursive: true, force: true });
