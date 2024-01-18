@@ -87,6 +87,9 @@ function processBlocks(blocks: Block[]) {
 
 function processLesson(lesson: Lesson) {
   if (lesson["@_identifierref"] !== undefined) {
+    if (lesson["title"] === "ДЗ №18") {
+      console.log(lesson["@_identifierref"]);
+    }
     const markupFilePathStart = `./temp/${lesson["@_identifierref"]}/${lesson["@_identifierref"]}`;
     let html: HTMLElement;
     if (existsSync(`${markupFilePathStart}.html`)) {
@@ -115,7 +118,16 @@ function processLesson(lesson: Lesson) {
       .concat(html.querySelectorAll("a").map((elem) => elem.attributes.href))
       .concat(html.querySelectorAll("url").map((elem) => elem.attributes.href))
       .concat(html.textContent.match(/https:\/\/[a-zA-Z.\/\-_?=#0-9]+/g) ?? [])
-      .filter((url) => url && !url.startsWith("/") && !url.startsWith("$"))
+      .filter(
+        (url) =>
+          url &&
+          !url.startsWith("/") &&
+          !url.startsWith("$") &&
+          !url.startsWith("#") &&
+          !url.startsWith("javascript:") &&
+          !url.startsWith("http://www.bing.com/widget/translator") &&
+          !url.startsWith("https://go.microsoft.com/?linkid=")
+      )
       .map((url) =>
         url.includes("youtube.com/embed/")
           ? `https://youtu.be/${url.split("/").at(-1)!}`
