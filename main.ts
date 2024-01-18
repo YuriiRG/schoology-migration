@@ -1,6 +1,12 @@
 import AdmZip from "adm-zip";
 import { XMLParser } from "fast-xml-parser";
-import { createWriteStream, existsSync, readFileSync, rmSync } from "fs";
+import {
+  createWriteStream,
+  existsSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from "fs";
 import { HTMLElement, parse as parseHtml } from "node-html-parser";
 import { z } from "zod";
 
@@ -91,9 +97,14 @@ function processLesson(lesson: Lesson) {
       html = parseHtml(
         readFileSync(`${markupFilePathStart}.xml`, { encoding: "utf-8" })
       );
+    } else if (readdirSync(`./temp/${lesson["@_identifierref"]}`).length > 0) {
+      console.log(
+        `WARNING: Unrecognized format found in "${lesson["title"]}" ${lesson["@_identifierref"]}`
+      );
+      return;
     } else {
       console.log(
-        `No html or xml found in "${lesson["title"]}" ${lesson["@_identifierref"]}`
+        `No files found in "${lesson["title"]}" ${lesson["@_identifierref"]}`
       );
       return;
     }
