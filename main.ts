@@ -103,9 +103,8 @@ function processLesson(lesson: Lesson) {
       .map((elem) => elem.attributes.src)
       .concat(html.querySelectorAll("a").map((elem) => elem.attributes.href))
       .concat(html.querySelectorAll("url").map((elem) => elem.attributes.href))
-      .filter((url) => url && !url.startsWith("/"))
-      .concat(html.textContent.match(/https:\/\/[a-zA-Z.\/\-_?=0-9]+/g) ?? [])
-      .filter((url) => !url.includes(".pptx"))
+      .concat(html.textContent.match(/https:\/\/[a-zA-Z.\/\-_?=#0-9]+/g) ?? [])
+      .filter((url) => url && !url.startsWith("/") && !url.includes("$"))
       .map((url) =>
         url.includes("youtube.com/embed/")
           ? `https://youtu.be/${url.split("/").at(-1)!}`
